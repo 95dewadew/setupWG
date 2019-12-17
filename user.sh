@@ -71,7 +71,7 @@ add_user() {
 
      # client config file
      _PRIVATE_KEY=`cat $userdir/privatekey`
-     _VPN_IP=`10.9.0.$newnum/24`
+     _VPN_IP=$(get_vpn_ip)
      if [[ -z $_VPN_IP ]]; then
          echo "no available ip"
          exit 1
@@ -79,6 +79,7 @@ add_user() {
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.conf
      
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.all.conf
+     sed -i 's%^Address.*$%'"Address = 10.9.0.$newnum\/24"'%' $username.conf
      sed -r "s/AllowedIPs.*/AllowedIPs = 0.0.0.0\/0/g" -i $userdir/client.all.conf
      
      qrencode -t ansiutf8  < $userdir/client.conf
