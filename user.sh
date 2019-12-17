@@ -68,26 +68,29 @@ add_user() {
 
      mkdir -p "$userdir"
     
-    cd /etc/wireguard/
-    cp client-wg0.conf $userdir.conf
-    wg genkey | tee $userdir/privatekey | wg pubkey > $userdir/publickey
+     wg genkey | tee $userdir/privatekey | wg pubkey > $userdir/publickey
 
-    ipnum=$(grep Allowed /etc/wireguard/wg0.conf | tail -1 | awk -F '[ ./]' '{print $6}')
-    newnum=$((10#${ipnum}+1))
-    sed -i 's%^PrivateKey.*$%'"PrivateKey = $(cat $userdir/privatekey)"'%' $userdir.conf
-    sed -i 's%^Address.*$%'"Address = 10.9.0.$newnum\/24"'%' $userdir.conf
+     # client config file
+     _PRIVATE_KEY=`cat $userdir/privatekey`
+     _VPN_IP=$(get_vpn_ip)
+     if [[ -z $_VPN_IP ]]; then
+         echo "no available ip"
+         exit 1
      fi
-    cat >> /etc/wireguard/wg0.conf <<-EOF
-    [Peer]
-    PublicKey = $(cat tempubkey)
-    AllowedIPs = 10.9.0.$newnum/32
-    EOF
+     eval "echo \"$(cat "${template_file}")\"" > $userdir/client.conf
+     
+     eval "echo \"$(cat "${template_file}")\"" > $userdir/client.all.conf
+     sed -r "s/AllowedIPs.*/AllowedIPs = 0.0.0.0\/0/g" -i $userdir/client.all.conf
+     
+     qrencode -t ansiutf8  < $userdir/client.conf
+     qrencode -o $userdir/$user.png  < $userdir/client.conf
+
+     qrencode -o $userdir/$user.all.png  < $userdir/client.all.conf
      
      # change wg config
-     wg set wg0 peer $(cat $userdir/publickey) allowed-ips 10.9.0.$newnum/32
-     qrencode -t ansiutf8  < /$userdir.conf
-     echo -e "Add complete, $userdir.conf"
-     rm -f $userdir/privatekey $userdir/publickey
+     local ip=${_VPN_IP%/*}/32
+     local public_key=`cat $userdir/publickey`
+     wg set $interface peer $public_key allowed-ips $ip
      if [[ $? -ne 0 ]]; then
        echo "wg set failed"
        rm -rf $user
