@@ -71,7 +71,7 @@ add_user() {
 
      # client config file
      _PRIVATE_KEY=`cat $userdir/privatekey`
-     _VPN_IP= 10.9.0.$newnum/24
+     _VPN_IP=`10.9.0.$newnum/24`
      if [[ -z $_VPN_IP ]]; then
          echo "no available ip"
          exit 1
@@ -87,7 +87,7 @@ add_user() {
      qrencode -o $userdir/$user.all.png  < $userdir/client.all.conf
      
      # change wg config
-     local ip= 10.9.0.$newnum/32
+     local ip=`10.9.0.$newnum/32`
      local public_key=`cat $userdir/publickey`
      wg set $interface peer $public_key allowed-ips 10.9.0.$newnum/32
      if [[ $? -ne 0 ]]; then
