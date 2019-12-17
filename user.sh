@@ -79,7 +79,7 @@ add_user() {
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.conf
      
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.all.conf
-     sed -r "s/AllowedIPs.*/AllowedIPs = AllowedIPs = 10.9.0.$newnum/32" -i $userdir/client.all.conf
+     sed -r "s/AllowedIPs.*/AllowedIPs = 0.0.0.0\/0/g" -i $userdir/client.all.conf
      
      qrencode -t ansiutf8  < $userdir/client.conf
      qrencode -o $userdir/$user.png  < $userdir/client.conf
