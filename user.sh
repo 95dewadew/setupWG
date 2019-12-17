@@ -60,6 +60,8 @@ add_user() {
     local template_file=${CLIENT_TPL_FILE}
     local interface=${_INTERFACE}
     local userdir="users/$user"
+    ipnum=$(grep Allowed /wg.def | tail -1 | awk -F '[ ./]' '{print $6}')
+    newnum=$((10#${ipnum}+1))
 
     if [ ! -d "$userdir" ]
     then
@@ -69,7 +71,7 @@ add_user() {
 
      # client config file
      _PRIVATE_KEY=`cat $userdir/privatekey`
-     _VPN_IP=$(get_vpn_ip)
+     _VPN_IP= 10.9.0.$newnum/24
      if [[ -z $_VPN_IP ]]; then
          echo "no available ip"
          exit 1
@@ -77,7 +79,7 @@ add_user() {
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.conf
      
      eval "echo \"$(cat "${template_file}")\"" > $userdir/client.all.conf
-     sed -r "s/AllowedIPs.*/AllowedIPs = 0.0.0.0\/0/g" -i $userdir/client.all.conf
+     sed -r "s/AllowedIPs.*/AllowedIPs = AllowedIPs = 10.9.0.$newnum/32" -i $userdir/client.all.conf
      
      qrencode -t ansiutf8  < $userdir/client.conf
      qrencode -o $userdir/$user.png  < $userdir/client.conf
@@ -85,16 +87,16 @@ add_user() {
      qrencode -o $userdir/$user.all.png  < $userdir/client.all.conf
      
      # change wg config
-     local ip=${_VPN_IP%/*}/32
+     local ip= 10.9.0.$newnum/32
      local public_key=`cat $userdir/publickey`
-     wg set $interface peer $public_key allowed-ips $ip
+     wg set $interface peer $public_key allowed-ips 10.9.0.$newnum/32
      if [[ $? -ne 0 ]]; then
        echo "wg set failed"
        rm -rf $user
        exit 1
      fi
 
-     echo "$user $_VPN_IP $public_key" >> ${SAVED_FILE}
+     echo "$user " >> ${SAVED_FILE}
     
     else
      echo "$user already exists." 1>&2
