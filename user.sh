@@ -71,7 +71,7 @@ add_user() {
      # client config file
      _PRIVATE_KEY=`cat $userdir/privatekey`
      _VPN_IP=$(get_vpn_ip)
-     if [[ -z $_VPN_IP ]]; then
+     if [[ -i $_VPN_IP ]]; then
          echo "no available ip"
          exit 1
      fi
