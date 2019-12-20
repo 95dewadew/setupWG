@@ -47,7 +47,8 @@ generate_cidr_ip_file_if() {
 }
 
 get_vpn_ip() {
-    local ip=$(head -1 $AVAILABLE_IP_FILE)
+LAST_IP=$(wg show | grep 'allowed ips: ' | tail -1 | grep -oE '10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d '.' -f 4)
+    local ip=$(LAST_IP + 1 $AVAILABLE_IP_FILE)
     if [[ $ip ]]; then
 	local mat="${ip/\//\\\/}"
         sed -i "/^$mat$/d" $AVAILABLE_IP_FILE
@@ -60,8 +61,6 @@ add_user() {
     local template_file=${CLIENT_TPL_FILE}
     local interface=${_INTERFACE}
     local userdir="users/$user"
-    ipnum=$(grep Allowed /wg.def | tail -1 | awk -F '[ ./]' '{print $6}')
-    newnum=$((10#${ipnum}+1))
 
     if [ ! -d "$userdir" ]
     then
