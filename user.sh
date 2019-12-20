@@ -46,9 +46,9 @@ generate_cidr_ip_file_if() {
     done
 }
 
-get_vpn_ip() {
 LAST_IP=$(wg show | grep 'allowed ips: ' | tail -1 | grep -oE '10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d '.' -f 4)
-    local ip=$(LAST_IP + 1 $AVAILABLE_IP_FILE)
+get_vpn_ip() {
+    local ip=$(LAST_IP  +1 $AVAILABLE_IP_FILE)
     if [[ $ip ]]; then
 	local mat="${ip/\//\\\/}"
         sed -i "/^$mat$/d" $AVAILABLE_IP_FILE
